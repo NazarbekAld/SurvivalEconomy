@@ -20,8 +20,23 @@ loadbefore:
   NOTE: Required SurvivalCore
   May return null.
 */
-EconomyAPI economyManager = getServer().getServiceManager().getProvider(EconomyAPI.class).getProvider();
+EconomyAPI api = getServer().getServiceManager().getProvider(EconomyAPI.class).getProvider();
 ```
 
 # API example
 
+```java
+public class EconomyRegistrations implements Listener {
+EconomyAPI api; // Somehow get ins of EconomyAPI
+
+/*
+  Add 69$ for player breaking gold block (41).
+*/
+@EventHandler
+    public void onBreak(@NotNull BlockBreakEvent e){
+        if (e.getBlock().equalsBlock(Block.get(41))){
+            api.add(e.getPlayer().getUniqueId(), 69)
+        }
+    }
+}
+```
