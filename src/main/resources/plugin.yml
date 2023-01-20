@@ -1,0 +1,42 @@
+
+#name, main, version and api are required
+name: Economy
+main: me.nazarxexe.survival.econ.Economy
+#remember version and api is string, don't write it like this: 1.0.0, or there will be an exception
+version: "1.0.0"
+api: ["1.0.0"]
+load: POSTWORLD
+author: NazarbekAlda
+# Authors and author will be added together in one list.
+description: A economy plugin
+website: "Null pointer exeption"
+# These dependencies are required for the plugin to start.
+depend:
+  - "SurvivalCore"
+# These dependencies are not required.
+# Log prefix in console
+prefix: "ECONOMY"
+# Plugin will be loaded before these. Any cyclic loadbefore's or dependencies's will throw errors!
+loadbefore: ["SurvivalCore"]
+
+commands:
+  economy:
+    permission: economy.command
+    description: "A economy command"
+    aliases:
+      - eco
+      - econ
+
+permissions:
+  economy.command:
+    default: op
+  economy.add:
+    default: op
+  economy.decrement:
+    default: op
+  economy.get:
+    default: op
+  economy.send:
+    default: op
+  economy.debug:
+    default: op
