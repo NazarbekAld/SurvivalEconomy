@@ -1,5 +1,6 @@
 # SurvivalEconomy
-Example of economy plugins with helper survival core API
+Example of economy plugin with helper [SurvivalCore](https://github.com/NazarbekAld/SurvivalCore) API.
+Please include sql libs for the SurvivalCore API.
 
 # API hook
 
