@@ -2,14 +2,16 @@ package me.nazarxexe.survival.econ;
 
 import cn.nukkit.Player;
 import cn.nukkit.scheduler.AsyncTask;
+import cn.nukkit.utils.TextFormat;
 import me.nazarxexe.survival.core.economy.EconomyManager;
 import me.nazarxexe.survival.core.economy.Pocket;
+import me.nazarxexe.survival.core.tools.TerminalComponent;
+import me.nazarxexe.survival.core.tools.TextComponent;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class EconomyAPI {
 
@@ -17,37 +19,18 @@ public class EconomyAPI {
     private final EconomyManager manager;
 
 
-    public Set<Pocket> getCache() {
+
+    private final Map<UUID, Pocket> cache;
+    public Map<UUID, Pocket> getCache() {
         return cache;
     }
-
-    private final Set<Pocket> cache;
 
     public EconomyAPI(@NotNull Economy plugin){
         this.plugin = plugin;
         this.manager = plugin.getEconomyManager();
-        this.cache = new HashSet<>();
+        this.cache = new HashMap<>();
     }
 
-    public boolean isPlayerOnCache(@NotNull Player player){
-        AtomicBoolean res = new AtomicBoolean(false);
-        cache.forEach((pocket -> {
-            if (!(pocket.getOwner().equals(player.getUniqueId()))) return;
-            res.set(true);
-        }));
-        return res.get();
-    }
-
-    public CompletableFuture<Boolean> isPlayerOnCacheAsync(@NotNull Player player){
-        return CompletableFuture.supplyAsync(() -> {
-            AtomicBoolean res = new AtomicBoolean(false);
-            cache.forEach((pocket -> {
-                if (!(pocket.getOwner().equals(player.getUniqueId()))) return;
-                res.set(true);
-            }));
-            return res.get();
-        });
-    }
 
     public CompletableFuture<Boolean> isPlayerOnDatabase(@NotNull UUID player){
         return manager.loadPocket("econ", player).thenApplyAsync(Objects::nonNull);
@@ -57,30 +40,31 @@ public class EconomyAPI {
     }
 
 
-    /*
-        
-     */
     public void databaseToCached(@NotNull Player player){
         plugin.getServer().getScheduler().scheduleAsyncTask(plugin, new AsyncTask() {
             @Override
             public void onRun() {
                 manager.loadPocket("econ", player.getUniqueId()).thenAcceptAsync((pocket -> {
                     if (pocket == null){
-                        cache.add(new Pocket("econ", player.getUniqueId()));
+                        cache.put(player.getUniqueId(), new Pocket("econ", player.getUniqueId()));
                         return;
                     }
-                    cache.add(pocket);
+                    cache.put(player.getUniqueId(), pocket);
                 })).join();
             }
         });
     }
 
     public void cachedToDatabase(@NotNull Player player){
-        cache.forEach((pocket -> {
-            if (pocket.getOwner().equals(player.getUniqueId())){
-                manager.savePocket(pocket);
-            }
-        }));
+        if (cache.get(player.getUniqueId()) == null){
+            new TerminalComponent(plugin.getLogger(), new TextComponent()
+                    .combine(TextFormat.RED)
+                    .combine("Cannot save ")
+                    .combine(player.getUniqueId().toString())
+                    .combine("! Because not exists on cache!")).warn();
+            return;
+        }
+       manager.savePocket(cache.get(player.getUniqueId()));
     }
 
     public boolean add(@NotNull UUID payee, long balance){
@@ -123,14 +107,8 @@ public class EconomyAPI {
 
 
 
-    public Pocket getPocket(@NotNull UUID player) {
-        AtomicReference<Pocket> G = new AtomicReference<>();
-        cache.forEach((pocket -> {
-            if (pocket.getOwner().equals(player)) {
-                G.set(pocket);
-            }
-        }));
-        return G.get();
+    public @Nullable Pocket getPocket(@NotNull UUID player) {
+        return cache.get(player);
     }
 
 
