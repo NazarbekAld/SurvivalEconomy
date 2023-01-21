@@ -9,7 +9,7 @@ load: POSTWORLD
 author: NazarbekAlda
 # Authors and author will be added together in one list.
 description: A economy plugin
-website: "Null pointer exeption"
+website: "Null pointer exception"
 # These dependencies are required for the plugin to start.
 depend:
   - "SurvivalCore"
@@ -17,7 +17,8 @@ depend:
 # Log prefix in console
 prefix: "ECONOMY"
 # Plugin will be loaded before these. Any cyclic loadbefore's or dependencies's will throw errors!
-loadbefore: ["SurvivalCore"]
+loadbefore:
+  - "SurvivalCore"
 
 commands:
   economy:

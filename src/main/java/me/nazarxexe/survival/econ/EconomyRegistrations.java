@@ -22,9 +22,13 @@ public class EconomyRegistrations implements Listener {
         api.databaseToCached(e.getPlayer());
     }
 
+    
+
     @EventHandler
     public void onLeft(@NotNull PlayerQuitEvent e){
         api.cachedToDatabase(e.getPlayer());
+        api.getCache().remove(e.getPlayer().getUniqueId());
+
     }
 
 }
