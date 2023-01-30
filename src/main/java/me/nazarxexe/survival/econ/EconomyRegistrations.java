@@ -6,6 +6,7 @@ import cn.nukkit.event.player.PlayerJoinEvent;
 import cn.nukkit.event.player.PlayerQuitEvent;
 import org.jetbrains.annotations.NotNull;
 
+@SuppressWarnings("unused")
 public class EconomyRegistrations implements Listener {
 
     final Economy plugin;
