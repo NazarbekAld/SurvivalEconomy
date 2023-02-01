@@ -7,11 +7,15 @@ import me.nazarxexe.survival.core.economy.EconomyManager;
 import me.nazarxexe.survival.core.economy.Pocket;
 import me.nazarxexe.survival.core.tools.TerminalComponent;
 import me.nazarxexe.survival.core.tools.TextComponent;
+import org.apache.commons.text.StringSubstitutor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+
+
+
 
 @SuppressWarnings("unused")
 public class EconomyAPI {
@@ -25,6 +29,8 @@ public class EconomyAPI {
     public Map<UUID, Pocket> getCache() {
         return cache;
     }
+
+
 
     public EconomyAPI(@NotNull Economy plugin){
         this.plugin = plugin;
