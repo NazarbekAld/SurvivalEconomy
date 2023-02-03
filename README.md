@@ -3,6 +3,26 @@ Economy plugin with helper [SurvivalCore](https://github.com/NazarbekAld/Surviva
 <br />
 Please include sql libs for the SurvivalCore API.
 
+# As dependency.
+```html
+    <repositories>
+
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.github.NazarbekAld</groupId>
+            <artifactId>SurvivalEconomy</artifactId>
+            <version>1.0</version>
+        </dependency>
+    </dependencies>
+```
+
 # API hook
 
 You must include
