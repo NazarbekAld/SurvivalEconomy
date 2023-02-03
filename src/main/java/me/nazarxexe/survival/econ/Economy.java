@@ -1,17 +1,27 @@
+
 package me.nazarxexe.survival.econ;
 
-import cn.nukkit.command.Command;
+import cn.nukkit.Player;
 import cn.nukkit.command.CommandSender;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.plugin.service.ServicePriority;
+import cn.nukkit.utils.Config;
 import cn.nukkit.utils.TextFormat;
 import lombok.Getter;
 import me.nazarxexe.survival.core.chat.ChatManager;
+import me.nazarxexe.survival.core.command.CommandExecutable;
+import me.nazarxexe.survival.core.command.EzCommand;
 import me.nazarxexe.survival.core.economy.EconomyManager;
 import me.nazarxexe.survival.core.tools.TerminalComponent;
 import me.nazarxexe.survival.core.tools.TextComponent;
+import me.nazarxexe.survival.econ.commands.EconomyCommand;
+import org.apache.commons.text.StringSubstitutor;
+
+import java.io.File;
+import java.util.*;
 
 @Getter
+@SuppressWarnings({ "unused", "FieldMayBeFinal" })
 public class Economy extends PluginBase {
 
     EconomyManager economyManager;
@@ -19,8 +29,32 @@ public class Economy extends PluginBase {
 
     EconomyAPI api;
 
+    List<EzCommand> ezcommands = new ArrayList<>();
+
+
+    private Config config;
+    private String ECONOMY_CHAR;
+
+    private HashMap<String, String> confighook;
+
+
+
     @Override
     public void onEnable(){
+
+        saveDefaultConfig();
+
+        config = new Config(
+                new File(this.getDataFolder(), "config.yml"),
+                Config.YAML
+        );
+
+        confighook = new HashMap<>();
+
+        for (String i : config.getKeys()){
+            confighook.put(i, TextFormat.colorize('&', config.get(i, "CONFIG ERROR")));
+        }
+
         if (!(getServer().getPluginManager().getPlugin("SurvivalCore").isEnabled())){
 
             getLogger().error("SurvivalCore dependency not found!");
@@ -51,6 +85,9 @@ public class Economy extends PluginBase {
                     .info();
         }
 
+
+
+
         api = new EconomyAPI(this);
         getServer().getServiceManager().register(
                 EconomyAPI.class,
@@ -61,6 +98,9 @@ public class Economy extends PluginBase {
 
         getServer().getPluginManager().registerEvents(new EconomyRegistrations(this), this);
 
+        registerCommands();
+
+
     }
 
     @Override
@@ -68,83 +108,15 @@ public class Economy extends PluginBase {
 
     }
 
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 
-        if (!(command.getName().equals("economy"))) return true;
 
-        switch (args[0]) {
-            case "add" -> {
-                if (!(sender.hasPermission("economy.add"))) {
-                    sender.sendMessage(new TextComponent(TextComponent.coloredText(
-                            TextFormat.RED,
-                            "Not enough permissions."))
-                            .getText());
-                    return true;
-                }
-                boolean success = api.add(getServer().getPlayer(args[1]).getUniqueId(), Long.parseLong(args[2]));
-                if (!(success)) {
-
-                    sender.sendMessage(new TextComponent()
-                            .combine(TextFormat.RED + "Player not online or caused error.")
-                            .getText());
-
-                    return true;
-                }
-                sender.sendMessage(new TextComponent()
-                        .combine(TextFormat.GREEN + "Added ")
-                        .combine(args[2])
-                        .combine("$ to ")
-                        .combine(args[1])
-                        .getText());
-            }
-            case "decrement" -> {
-                if (!(sender.hasPermission("economy.decrement"))) {
-                    sender.sendMessage(new TextComponent()
-                            .combine(TextFormat.RED + "Not enough permissions.")
-                            .getText());
-                    return true;
-                }
-                boolean success = api.decrement(getServer().getPlayer(args[1]).getUniqueId(), Long.parseLong(args[2]));
-
-                if (!(success)) {
-
-                    sender.sendMessage(new TextComponent()
-                            .combine(TextFormat.RED + "Player not online or caused error.")
-                            .getText());
-
-                    return true;
-                }
-                sender.sendMessage(new TextComponent()
-                        .combine(TextFormat.RED + "Decreased ")
-                        .combine(args[2])
-                        .combine("$ to ")
-                        .combine(args[1])
-                        .getText());
-            }
-            case "get" -> {
-                if (!(sender.hasPermission("economy.get"))) {
-                    sender.sendMessage(new TextComponent()
-                            .combine(TextFormat.RED + "Not enough permissions.")
-                            .getText());
-                    return true;
-                }
-                long bal = api.get(getServer().getPlayer(args[1]).getUniqueId());
-                sender.sendMessage(new TextComponent()
-                        .combine(TextFormat.GREEN)
-                        .combine(args[1])
-                        .combine(" has ")
-                        .combine(String.valueOf(bal))
-                        .combine("$")
-                        .getText());
-            }
-            case "cache" -> sender.sendMessage(new TextComponent(String.valueOf(api.getCache().size()))
-                    .add(api.getCache().toString())
-                    .getText());
-        }
-
-        return true;
+    private void registerCommands() {
+        new EzCommand(new EconomyCommand(this)).register(this);
+        // No more command check extensions!
     }
+
+
+
 
 
 

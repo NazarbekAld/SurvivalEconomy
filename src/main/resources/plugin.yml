@@ -39,5 +39,7 @@ permissions:
     default: op
   economy.send:
     default: op
+  economy.set:
+    default: op
   economy.debug:
     default: op

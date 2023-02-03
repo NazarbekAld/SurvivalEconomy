@@ -2,17 +2,24 @@ package me.nazarxexe.survival.econ;
 
 import cn.nukkit.Player;
 import cn.nukkit.scheduler.AsyncTask;
+import cn.nukkit.utils.Hash;
 import cn.nukkit.utils.TextFormat;
+import lombok.Getter;
 import me.nazarxexe.survival.core.economy.EconomyManager;
 import me.nazarxexe.survival.core.economy.Pocket;
 import me.nazarxexe.survival.core.tools.TerminalComponent;
 import me.nazarxexe.survival.core.tools.TextComponent;
+import org.apache.commons.text.StringSubstitutor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
+
+
+
+@SuppressWarnings("unused")
 public class EconomyAPI {
 
     private final Economy plugin;
@@ -25,10 +32,13 @@ public class EconomyAPI {
         return cache;
     }
 
+    private @Getter HashMap<String , String> confighook;
+
     public EconomyAPI(@NotNull Economy plugin){
         this.plugin = plugin;
         this.manager = plugin.getEconomyManager();
         this.cache = new HashMap<>();
+        this.confighook = plugin.getConfighook();
     }
 
 
