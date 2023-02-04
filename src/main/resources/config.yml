@@ -9,9 +9,3 @@ BAL_GET: "&a${payee} has ${amount}${ECONOMY_CHAR}"
 BAL_ADD: "&a${payee}'s balance added ${amount}${ECONOMY_CHAR}"
 BAL_DECREMENT: "&a{$payee}'s balance decremented ${amount}${ECONOMY_CHAR}"
 
-BAL_PAY: "&aSent ${amount}${ECONOMY_CHAR} to ${payee}"
-
-BAL_NOT_ENOUGH: "&c&lNot enough ${ECONOMY_CHAR}"
-BAL_MORE_THAN_ONE: "&c&lYou must send more than 0${ECONOMY_CHAR}"
-
-
