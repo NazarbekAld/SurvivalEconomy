@@ -57,15 +57,10 @@ class Economy : PluginBase() {
             TerminalComponent(
                 logger, TextComponent(
                     TextComponent.coloredText(TextFormat.GREEN, "Successfully grabbed economy manager.")
-                        .add(
-                            TextComponent.coloredText(
-                                TextFormat.GREEN, "Successfully grabbed chat manager"
-                            )
-                        )
-                )
-            )
-                .info()
+                        .add(TextComponent.coloredText(
+                                TextFormat.GREEN, "Successfully grabbed chat manager")))).info()
         }
+
         api = EconomyAPI(this)
         server.serviceManager.register(
             EconomyAPI::class.java,
@@ -74,6 +69,7 @@ class Economy : PluginBase() {
             ServicePriority.NORMAL
         )
         server.pluginManager.registerEvents(EconomyRegistrations(this), this)
+
         registerCommands()
     }
 

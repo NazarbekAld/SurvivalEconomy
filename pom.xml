@@ -28,9 +28,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.github.PowerNukkitX</groupId>
-            <artifactId>PowerNukkitX</artifactId>
-            <version>master-SNAPSHOT</version>
+            <groupId>cn.powernukkitx</groupId>
+            <artifactId>powernukkitx</artifactId>
+            <version>-SNAPSHOT</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-text -->
