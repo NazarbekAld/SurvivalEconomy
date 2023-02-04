@@ -1,125 +1,112 @@
-package me.nazarxexe.survival.econ.commands;
+package me.nazarxexe.survival.econ.commands
 
-import cn.nukkit.Player;
-import cn.nukkit.command.CommandSender;
-import me.nazarxexe.survival.core.command.CommandExecutable;
-import me.nazarxexe.survival.econ.Economy;
-import me.nazarxexe.survival.econ.EconomyAPI;
-import org.apache.commons.text.StringSubstitutor;
+import cn.nukkit.Player
+import cn.nukkit.command.CommandSender
+import me.nazarxexe.survival.core.command.CommandExecutable
+import me.nazarxexe.survival.econ.Economy
+import me.nazarxexe.survival.econ.EconomyAPI
+import org.apache.commons.text.StringSubstitutor
 
-import java.util.HashMap;
-import java.util.Map;
+class EconomyCommand(private val plugin: Economy?) {
+    private val confighook: HashMap<String?, String?>? = plugin?.confighook
+    private var api: EconomyAPI? = plugin?.api
 
-public class EconomyCommand {
-
-    final Economy plugin;
-    final HashMap<String, String> confighook;
-    EconomyAPI api;
-
-
-    public EconomyCommand(Economy plugin) {
-        this.plugin = plugin;
-        this.confighook = plugin.getConfighook();
-        this.api = plugin.getApi();
-    }
-
-    private boolean execute(CommandSender sender, String commandLabel, String[] args) {
-
-        if (!(sender instanceof Player)) return true;
-
-        HashMap<String, String> temp = confighook;
-        if (args.length < 2){
-            return false;
+    private fun execute(sender: CommandSender?, commandLabel: String?, args: Array<String?>?): Boolean {
+        if (sender !is Player) return true
+        val temp = confighook
+        if (args!!.size < 2) {
+            return false
         }
-        temp.put("payee", args[1]);
-        temp.put("player", sender.asPlayer().getName());
-        if (args[0].equalsIgnoreCase("get")) {
-            temp.put("amount", "0");
+        temp!!["payee"] = args[1]
+        temp["player"] = sender.asPlayer()!!.name
+        if (args[0].equals("get", ignoreCase = true)) {
+            temp["amount"] = "0"
         }
-        if (args.length > 3) {
-            temp.put("amount", args[3]);
+        if (args.size > 3) {
+            temp["amount"] = args[3]
         }
-        switch (args[0]) {
-            case "add" -> { // ADD
-
-                if (!(sender.hasPermission("economy.add"))) {
-                    sender.sendMessage( new StringSubstitutor(temp).replace("${NO_PERMISSIONS}") );
-                    return true;
+        when (args[0]) {
+            "add" -> { // ADD
+                if (!sender.hasPermission("economy.add")) {
+                    sender.sendMessage(StringSubstitutor(temp).replace("\${NO_PERMISSIONS}"))
+                    return true
                 }
-                if (plugin.getServer().getPlayer(args[1]) == null){
-                    sender.sendMessage(new StringSubstitutor(temp).replace(confighook.get("TRANSACTION_ERROR")));
-                    return true;
+                if (plugin!!.server.getPlayer(args[1]) == null) {
+                    sender.sendMessage(StringSubstitutor(temp).replace(confighook!!["TRANSACTION_ERROR"]))
+                    return true
                 }
-                boolean success = api.add(plugin.getServer().getPlayer(args[1]).getUniqueId(), Long.parseLong(args[2]));
-                if (!(success)) {
-                    sender.sendMessage(new StringSubstitutor(temp).replace(confighook.get("TRANSACTION_ERROR")));
-                    return true;
+                val success = api!!.add(plugin.server.getPlayer(args[1]).uniqueId, args[2]!!.toLong())
+                if (!success) {
+                    sender.sendMessage(StringSubstitutor(temp).replace(confighook!!["TRANSACTION_ERROR"]))
+                    return true
                 }
-                sender.sendMessage(new StringSubstitutor(temp).replace(confighook.get("BAL_ADD")));
+                sender.sendMessage(StringSubstitutor(temp).replace(confighook!!["BAL_ADD"]))
             }
-            case "decrement" -> {
+
+            "decrement" -> {
                 // DECREMENT
-                if (!(sender.hasPermission("economy.decrement"))) {
-                    sender.sendMessage( new StringSubstitutor(temp).replace("${NO_PERMISSIONS}") );
-                    return true;
+                if (!sender.hasPermission("economy.decrement")) {
+                    sender.sendMessage(StringSubstitutor(temp).replace("\${NO_PERMISSIONS}"))
+                    return true
                 }
-                if (plugin.getServer().getPlayer(args[1]) == null){
-                    sender.sendMessage(new StringSubstitutor(temp).replace(confighook.get("TRANSACTION_ERROR")));
-                    return true;
+                if (plugin!!.server.getPlayer(args[1]) == null) {
+                    sender.sendMessage(StringSubstitutor(temp).replace(confighook?.get("TRANSACTION_ERROR")))
+                    return true
                 }
-                boolean success = api.decrement(plugin.getServer().getPlayer(args[1]).getUniqueId(), Long.parseLong(args[2]));
-
-                if (!(success)) {
-                    sender.sendMessage(new StringSubstitutor(temp).replace(confighook.get("TRANSACTION_ERROR")));
-                    return true;
+                val success = api!!.decrement(plugin.server.getPlayer(args[1]).uniqueId, args[2]!!.toLong())
+                if (!success) {
+                    sender.sendMessage(StringSubstitutor(temp).replace(confighook?.get("TRANSACTION_ERROR")))
+                    return true
                 }
-                sender.sendMessage(new StringSubstitutor(temp).replace(confighook.get("BAL_DECREMENT")));
+                sender.sendMessage(StringSubstitutor(temp).replace(confighook?.get("BAL_DECREMENT")))
             }
-            case "get" -> {
+
+            "get" -> {
                 // GET
-                if (!(sender.hasPermission("economy.get"))) {
-                    sender.sendMessage( new StringSubstitutor(confighook).replace("${NO_PERMISSIONS}") );
-                    return true;
+                if (!sender.hasPermission("economy.get")) {
+                    sender.sendMessage(StringSubstitutor(confighook).replace("\${NO_PERMISSIONS}"))
+                    return true
                 }
-                if (plugin.getServer().getPlayer(args[1]) == null){
-                    sender.sendMessage(new StringSubstitutor(temp).replace(confighook.get("TRANSACTION_ERROR")));
-                    return true;
+                if (plugin!!.server.getPlayer(args[1]) == null) {
+                    sender.sendMessage(StringSubstitutor(temp).replace(confighook?.get("TRANSACTION_ERROR")))
+                    return true
                 }
-                long bal = api.get(plugin.getServer().getPlayer(args[1]).getUniqueId());
-                temp.replace("amount", String.valueOf(bal));
-                sender.sendMessage(new StringSubstitutor(temp).replace(confighook.get("BAL_GET")));
+                val bal = api?.get(plugin.server.getPlayer(args[1]).uniqueId)
+                temp.replace("amount", bal.toString())
+                sender.sendMessage(StringSubstitutor(temp).replace(confighook!!["BAL_GET"]))
             }
-            case "set" -> {             // SET
 
-                if (!(sender.hasPermission("economy.set"))) {
-                    sender.sendMessage( new StringSubstitutor(temp).replace("${NO_PERMISSIONS}") );
-                    return true;
+            "set" -> {             // SET
+                if (!sender.hasPermission("economy.set")) {
+                    sender.sendMessage(StringSubstitutor(temp).replace("\${NO_PERMISSIONS}"))
+                    return true
                 }
-
-                if (plugin.getServer().getPlayer(args[1]) == null){
-                    sender.sendMessage(new StringSubstitutor(temp).replace(confighook.get("TRANSACTION_ERROR")));
-                    return true;
+                if (plugin!!.server.getPlayer(args[1]) == null) {
+                    sender.sendMessage(StringSubstitutor(temp).replace(confighook!!["TRANSACTION_ERROR"]))
+                    return true
                 }
-
-                boolean success = api.set(plugin.getServer().getPlayer(args[1]).getUniqueId(), Long.parseLong(args[2]));
-
-                if (!(success)) {
-                    sender.sendMessage(new StringSubstitutor(temp).replace(confighook.get("TRANSACTION_ERROR")));
-                    return true;
+                val success = api!!.set(plugin.server.getPlayer(args[1]).uniqueId, args[2]!!.toLong())
+                if (!success) {
+                    sender.sendMessage(StringSubstitutor(temp).replace(confighook!!["TRANSACTION_ERROR"]))
+                    return true
                 }
-
-                sender.sendMessage(new StringSubstitutor(temp).replace(confighook.get("BAL_SET")));
+                sender.sendMessage(StringSubstitutor(temp).replace(confighook!!["BAL_SET"]))
             }
         }
-
-        return true;
+        return true
     }
 
-    String name = "economy";
-    String desc = "A economy command!";
-    String usage = "/economy (get/set/add/decrement) (playername) (amount)";
-    String[] alts = { "eco" };
-
-    CommandExecutable executable = this::execute;
+    var name: String? = "economy"
+    var desc: String? = "A economy command!"
+    var usage: String? = "/economy (get/set/add/decrement) (playername) (amount)"
+    var alts: Array<String?>? = arrayOf("eco")
+    var executable: CommandExecutable? =
+        CommandExecutable { sender: CommandSender?, commandLabel: String?, args: Array<String?>? ->
+            execute(
+                sender,
+                commandLabel,
+                args
+            )
+        }
 
 }

@@ -1,128 +1,91 @@
-package me.nazarxexe.survival.econ;
+package me.nazarxexe.survival.econ
 
-import cn.nukkit.Player;
-import cn.nukkit.scheduler.AsyncTask;
-import cn.nukkit.utils.Hash;
-import cn.nukkit.utils.TextFormat;
-import lombok.Getter;
-import me.nazarxexe.survival.core.economy.EconomyManager;
-import me.nazarxexe.survival.core.economy.Pocket;
-import me.nazarxexe.survival.core.tools.TerminalComponent;
-import me.nazarxexe.survival.core.tools.TextComponent;
-import org.apache.commons.text.StringSubstitutor;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import cn.nukkit.Player
+import cn.nukkit.scheduler.AsyncTask
+import cn.nukkit.utils.TextFormat
+import me.nazarxexe.survival.core.economy.EconomyManager
+import me.nazarxexe.survival.core.economy.Pocket
+import me.nazarxexe.survival.core.tools.TerminalComponent
+import me.nazarxexe.survival.core.tools.TextComponent
+import java.util.*
+import java.util.concurrent.CompletableFuture
+import java.util.function.Consumer
 
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
+class EconomyAPI(plugin: Economy) {
+    private val plugin: Economy?
+    private val manager: EconomyManager?
+    val cache: MutableMap<UUID?, Pocket?>?
 
+    private val confighook: HashMap<String?, String?>?
 
-
-
-@SuppressWarnings("unused")
-public class EconomyAPI {
-
-    private final Economy plugin;
-    private final EconomyManager manager;
-
-
-
-    private final Map<UUID, Pocket> cache;
-    public Map<UUID, Pocket> getCache() {
-        return cache;
+    init {
+        this.plugin = plugin
+        manager = plugin.economyManager
+        cache = HashMap()
+        confighook = plugin.confighook
     }
 
-    private @Getter HashMap<String , String> confighook;
-
-    public EconomyAPI(@NotNull Economy plugin){
-        this.plugin = plugin;
-        this.manager = plugin.getEconomyManager();
-        this.cache = new HashMap<>();
-        this.confighook = plugin.getConfighook();
+    fun isPlayerOnDatabase(player: UUID): CompletableFuture<Boolean?>? {
+        return manager!!.loadPocket("econ", player)?.thenApplyAsync { obj: Pocket? -> Objects.nonNull(obj) }
     }
 
-
-    public CompletableFuture<Boolean> isPlayerOnDatabase(@NotNull UUID player){
-        return manager.loadPocket("econ", player).thenApplyAsync(Objects::nonNull);
-    }
-    public CompletableFuture<Boolean> isPlayerOnDatabase(@NotNull Player player){
-        return manager.loadPocket("econ", player.getUniqueId()).thenApplyAsync(Objects::nonNull);
+    fun isPlayerOnDatabase(player: Player): CompletableFuture<Boolean?>? {
+        return manager!!.loadPocket("econ", player.uniqueId)?.thenApplyAsync { obj: Pocket? -> Objects.nonNull(obj) }
     }
 
-
-    public void databaseToCached(@NotNull Player player){
-        plugin.getServer().getScheduler().scheduleAsyncTask(plugin, new AsyncTask() {
-            @Override
-            public void onRun() {
-                manager.loadPocket("econ", player.getUniqueId()).thenAcceptAsync((pocket -> {
-                    if (pocket == null){
-                        cache.put(player.getUniqueId(), new Pocket("econ", player.getUniqueId()));
-                        return;
+    fun databaseToCached(player: Player) {
+        plugin!!.server.scheduler.scheduleAsyncTask(plugin, object : AsyncTask() {
+            override fun onRun() {
+                manager!!.loadPocket("econ", player.uniqueId)!!.thenAcceptAsync(Consumer { pocket: Pocket? ->
+                    if (pocket == null) {
+                        cache!![player.uniqueId] = Pocket("econ", player.uniqueId)
+                        return@Consumer
                     }
-                    cache.put(player.getUniqueId(), pocket);
-                })).join();
+                    cache!![player.uniqueId] = pocket
+                }).join()
             }
-        });
+        })
     }
 
-    public void cachedToDatabase(@NotNull Player player){
-        if (cache.get(player.getUniqueId()) == null){
-            new TerminalComponent(plugin.getLogger(), new TextComponent()
+    fun cachedToDatabase(player: Player) {
+        if (cache!![player.uniqueId] == null) {
+            TerminalComponent(
+                plugin!!.logger, TextComponent()
                     .combine(TextFormat.RED)
                     .combine("Cannot save ")
-                    .combine(player.getUniqueId().toString())
-                    .combine("! Because not exists on cache!")).warn();
-            return;
+                    .combine(player.uniqueId.toString())
+                    .combine("! Because not exists on cache!")
+            ).warn()
+            return
         }
-       manager.savePocket(cache.get(player.getUniqueId()));
+        manager!!.savePocket(cache[player.uniqueId]!!)
     }
 
-    public boolean add(@NotNull UUID payee, long balance){
-        Pocket payeePocket = getPocket(payee);
-        if (payeePocket == null){
-            return false;
-        }
-        payeePocket.addBalance(balance);
-        return true;
-
+    fun add(payee: UUID, balance: Long): Boolean {
+        val payeePocket = getPocket(payee) ?: return false
+        payeePocket.addBalance(balance)
+        return true
     }
 
-    public boolean decrement(@NotNull UUID payer, long balance){
-        Pocket payerPocket = getPocket(payer);
-        if (payerPocket == null){
-            return false;
-        }
-        payerPocket.decrementBalance(balance);
-        return true;
+    fun decrement(payer: UUID, balance: Long): Boolean {
+        val payerPocket = getPocket(payer) ?: return false
+        payerPocket.decrementBalance(balance)
+        return true
     }
 
-    public boolean set(@NotNull UUID player, long balance){
-        Pocket playerPocket = getPocket(player);
-        if (playerPocket == null){
-            return false;
-        }
-        playerPocket.setBalance(balance);
-        return true;
-
+    operator fun set(player: UUID, balance: Long): Boolean {
+        val playerPocket = getPocket(player) ?: return false
+        playerPocket.balance = balance
+        return true
     }
 
-    public long get(@NotNull UUID player){
-        Pocket playerPocket = getPocket(player);
-        if (playerPocket == null){
-            return 0L;
-        }
-        return playerPocket.getBalance();
-
+    operator fun get(player: UUID): Long {
+        val playerPocket = getPocket(player) ?: return 0L
+        return playerPocket.balance
     }
 
 
-
-    public @Nullable Pocket getPocket(@NotNull UUID player) {
-        return cache.get(player);
+    fun getPocket(player: UUID): Pocket? {
+        return cache?.get(player)
     }
-
-
-
-
-
 }

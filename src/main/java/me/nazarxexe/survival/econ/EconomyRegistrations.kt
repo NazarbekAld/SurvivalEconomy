@@ -1,35 +1,27 @@
-package me.nazarxexe.survival.econ;
+package me.nazarxexe.survival.econ
 
-import cn.nukkit.event.EventHandler;
-import cn.nukkit.event.Listener;
-import cn.nukkit.event.player.PlayerJoinEvent;
-import cn.nukkit.event.player.PlayerQuitEvent;
-import org.jetbrains.annotations.NotNull;
+import cn.nukkit.event.EventHandler
+import cn.nukkit.event.Listener
+import cn.nukkit.event.player.PlayerJoinEvent
+import cn.nukkit.event.player.PlayerQuitEvent
 
-@SuppressWarnings("unused")
-public class EconomyRegistrations implements Listener {
+class EconomyRegistrations(plugin: Economy) : Listener {
+    private val plugin: Economy?
+    private val api: EconomyAPI?
 
-    final Economy plugin;
-    final EconomyAPI api;
-
-
-    public EconomyRegistrations(@NotNull Economy plugin) {
-        this.plugin = plugin;
-        this.api = plugin.getApi();
+    init {
+        this.plugin = plugin
+        this.api = this.plugin.api
     }
 
     @EventHandler
-    public void onJoin(@NotNull PlayerJoinEvent e){
-        api.databaseToCached(e.getPlayer());
+    fun onJoin(e: PlayerJoinEvent) {
+        this.api?.databaseToCached(e.player);
     }
-
-    
 
     @EventHandler
-    public void onLeft(@NotNull PlayerQuitEvent e){
-        api.cachedToDatabase(e.getPlayer());
-        api.getCache().remove(e.getPlayer().getUniqueId());
-
+    fun onLeft(e: PlayerQuitEvent) {
+        api?.cachedToDatabase(e.player)
+        api?.cache?.remove(e.player.uniqueId)
     }
-
 }
